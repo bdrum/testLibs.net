@@ -1,67 +1,54 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 
 namespace flow
 {
-    class Program 
+    class Program
     {
+        static private IConfiguration Configuration { get; set; }
+
+        static private readonly IReadOnlyDictionary<string, string> _defaultSettings = new Dictionary<string, string> {
+            {"One","10"},
+            {"Two", "20"},
+            {"AppPath", "mem/path"}
+        };
         static void Main(string[] args)
         {
-            IShowDelegate conoleDelegate = new ConsoleHandler();
-            IShowDelegate debugDelegate = new DebugHandler();
+            Configuration = new ConfigurationBuilder()
+                    .AddInMemoryCollection(_defaultSettings)
+                    .SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .Build();
 
-            var mo = new ModelOne();
+            Console.WriteLine($"AppContext.BaseDirectory - {AppContext.BaseDirectory}");
 
-            mo.showDelegate = conoleDelegate;
-            mo.Message = "This is will be shown in console";
+            var _appSets = new flow.AppSettings();
 
-            mo.showDelegate = debugDelegate;
-            mo.Message = "But this is will be shown id debug window.";
+            Configuration.GetSection(nameof(flow.AppSettings)).Bind(_appSets);
 
-            mo.showDelegate = null;
+            Console.WriteLine($"Here is One - {_appSets.One.ToString()}");
+            Console.WriteLine($"Here is Two - {_appSets.Two.ToString()}");
+            Console.WriteLine($"Here is AppPath - {_appSets.AppPath.ToString()}");
 
-            mo.ShowMeEvent += conoleDelegate.ShowMeTheMessage;
-            mo.ShowMeEvent += debugDelegate.ShowMeTheMessage;
-
-            mo.Message = "Messages in both sources via events!";
+            Console.WriteLine(AppSettings.TestUsing());
 
             Console.ReadLine();
         }
     }
 
-    public class ModelOne : IShowDelegate
+    public class AppSettings
     {
-        public IShowDelegate showDelegate;
-        public event Action<string> ShowMeEvent;
+        public int One { get; set; }
+        public int Two { get; set; }
+        public string AppPath { get; set; }
 
-        private string _message;
-        public string Message
+        public static string TestUsing()
         {
-            get { return _message; }
-            set
+            using (var archiveContents = System.IO.File.OpenRead(@"D:\GoogleDrive\Job\flnp\dev\tests\TestAutoUpdateRepo\Releases\TestAutoUpdateRepo-1.2.7-full1.nupkg"))
             {
-                showDelegate?.ShowMeTheMessage(value);
-                ShowMeEvent?.Invoke(value);
-                _message = value;
-
+                return archiveContents.Name;
             }
         }
-
-        void IShowDelegate.ShowMeTheMessage(string text) => showDelegate.ShowMeTheMessage(text);
-    }
-
-   public interface IShowDelegate
-    {
-        void ShowMeTheMessage(string text);
-    }
-
-    public class ConsoleHandler : IShowDelegate
-    {
-        void IShowDelegate.ShowMeTheMessage(string text) => Console.WriteLine(text);
-    }
-
-    public class DebugHandler : IShowDelegate
-    {
-        void IShowDelegate.ShowMeTheMessage(string text) => Debug.WriteLine(text);
     }
 }
