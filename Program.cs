@@ -1,54 +1,67 @@
 ﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace flow
 {
     class Program
     {
-        static private IConfiguration Configuration { get; set; }
+        static void Method1()
+        {
+            for (var i = 0; i < 2; ++i)
+            {
+                Thread.Sleep(1000);
+                Console.WriteLine("Method1 is working...");
+            }
+        }
 
-        static private readonly IReadOnlyDictionary<string, string> _defaultSettings = new Dictionary<string, string> {
-            {"One","10"},
-            {"Two", "20"},
-            {"AppPath", "mem/path"}
-        };
+        static void Method2()
+        {
+            for (var i = 0; i < 4; ++i)
+            {
+                Thread.Sleep(1000);
+                Console.WriteLine("Method2 is working...");
+            }
+        }
+
+
+        static void Method3()
+        {
+            Console.WriteLine("Start reading file async...");
+            using (var file = new System.IO.StreamReader(@"D:\GoogleDrive\Study\notes\Programming\csharp\examples\flow\appsettings.json"))
+                while (!file.EndOfStream)
+                {
+                    Console.WriteLine(file.ReadLine());
+                    Thread.Sleep(1000);
+                }
+        }
+
+        static void SlowMethod()
+        {
+            Method1();
+            Method2();
+            Method3();
+
+            Console.WriteLine($"Slow method completed");
+
+        }
+
         static void Main(string[] args)
         {
-            Configuration = new ConfigurationBuilder()
-                    .AddInMemoryCollection(_defaultSettings)
-                    .SetBasePath(AppContext.BaseDirectory)
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                    .Build();
+            var st = Stopwatch.StartNew();
+            Console.WriteLine($"Start Main sync.:");
+            SlowMethod();
 
-            Console.WriteLine($"AppContext.BaseDirectory - {AppContext.BaseDirectory}");
-
-            var _appSets = new flow.AppSettings();
-
-            Configuration.GetSection(nameof(flow.AppSettings)).Bind(_appSets);
-
-            Console.WriteLine($"Here is One - {_appSets.One.ToString()}");
-            Console.WriteLine($"Here is Two - {_appSets.Two.ToString()}");
-            Console.WriteLine($"Here is AppPath - {_appSets.AppPath.ToString()}");
-
-            Console.WriteLine(AppSettings.TestUsing());
-
-            Console.ReadLine();
-        }
-    }
-
-    public class AppSettings
-    {
-        public int One { get; set; }
-        public int Two { get; set; }
-        public string AppPath { get; set; }
-
-        public static string TestUsing()
-        {
-            using (var archiveContents = System.IO.File.OpenRead(@"D:\GoogleDrive\Job\flnp\dev\tests\TestAutoUpdateRepo\Releases\TestAutoUpdateRepo-1.2.7-full1.nupkg"))
+            for (var i = 0; i < 5; ++i)
             {
-                return archiveContents.Name;
+                Thread.Sleep(1000);
+                Console.WriteLine($"CallMethod is working...");
             }
+
+            st.Stop();
+            Console.WriteLine($"Main method has finished working");
+            Console.WriteLine($"Elapsed time {st.ElapsedMilliseconds / 1000} sec");
         }
     }
 }
