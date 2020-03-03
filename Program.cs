@@ -1,67 +1,58 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Threading;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace flow
 {
     class Program
     {
-        static void Method1()
-        {
-            for (var i = 0; i < 2; ++i)
-            {
-                Thread.Sleep(1000);
-                Console.WriteLine("Method1 is working...");
-            }
-        }
+        static private IConfiguration Configuration { get; set; }
 
-        static void Method2()
-        {
-            for (var i = 0; i < 4; ++i)
-            {
-                Thread.Sleep(1000);
-                Console.WriteLine("Method2 is working...");
-            }
-        }
+        static private readonly IReadOnlyDictionary<string, string> _defaultSettings = new Dictionary<string, string> {
+            {"AppSettings:One","10"},
+            {"AppSettings:Two", "20"},
+            {"AppSettings:AppPath", "mem/path"},
+            {"GlobalValue1", "1000"},
+            {"GlobalValue2", "2000"}
+        };
 
-
-        static void Method3()
-        {
-            Console.WriteLine("Start reading file async...");
-            using (var file = new System.IO.StreamReader(@"D:\GoogleDrive\Study\notes\Programming\csharp\examples\flow\appsettings.json"))
-                while (!file.EndOfStream)
-                {
-                    Console.WriteLine(file.ReadLine());
-                    Thread.Sleep(1000);
-                }
-        }
-
-        static void SlowMethod()
-        {
-            Method1();
-            Method2();
-            Method3();
-
-            Console.WriteLine($"Slow method completed");
-
-        }
-
+        static private readonly IDictionary<string, string> _clMaps= new Dictionary<string, string> {
+            {"-o","GlobalValue1"},
+            {"--one", "GlobalValue1"},
+            {"-t", "GlobalValue2"},
+            {"--two", "GlobalValue2"}
+        };
         static void Main(string[] args)
         {
-            var st = Stopwatch.StartNew();
-            Console.WriteLine($"Start Main sync.:");
-            SlowMethod();
+            Configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(_defaultSettings)
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddCommandLine(args, _clMaps)
+                .Build();
 
-            for (var i = 0; i < 5; ++i)
-            {
-                Thread.Sleep(1000);
-                Console.WriteLine($"CallMethod is working...");
-            }
+            Console.WriteLine($"AppContext.BaseDirectory - {AppContext.BaseDirectory}");
+            //Console.WriteLine(Configuration);
 
-            st.Stop();
-            Console.WriteLine($"Main method has finished working");
-            Console.WriteLine($"Elapsed time {st.ElapsedMilliseconds / 1000} sec");
+            var _appSets = new flow.AppSettings();
+
+            Configuration.GetSection(nameof(flow.AppSettings)).Bind(_appSets);
+
+            Console.WriteLine($"Here is One - {_appSets.One.ToString()}");
+            Console.WriteLine($"Here is Two - {_appSets.Two.ToString()}");
+            Console.WriteLine($"Here is AppPath - {_appSets.AppPath.ToString()}");
+            Console.WriteLine($"Here is GlobalValue1 - {Configuration["GlobalValue1"]}");
+            Console.WriteLine($"Here is GlobalValue2 - {Configuration["GlobalValue2"]}");
+
+            Console.ReadLine();
         }
+
+      }
+
+    public class AppSettings
+    {
+        public int One { get; set; }
+        public int Two { get; set; }
+        public string AppPath { get; set; }
     }
 }
