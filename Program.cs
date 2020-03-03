@@ -1,58 +1,64 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using CommandLine;
+using CommandLine.Text;
 
 namespace flow
 {
+    class Options
+    {
+        [Option(Default = false, HelpText = "Prints all messages to standard output.")]
+        public bool Verbose { get; set; }
+
+        [Option("stdin", Default = false, HelpText = "Read from stdin")]
+        public bool stdin { get; set; }
+
+        [Option("file", HelpText = "File name")]
+        public string FileName { get; set; }
+
+        [Value(0, MetaName = "offset", HelpText = "File offset.")]
+        public long? Offset { get; set; }
+    }
     class Program
     {
-        static private IConfiguration Configuration { get; set; }
+        static ParserResult<Options> parserResult;
 
-        static private readonly IReadOnlyDictionary<string, string> _defaultSettings = new Dictionary<string, string> {
-            {"AppSettings:One","10"},
-            {"AppSettings:Two", "20"},
-            {"AppSettings:AppPath", "mem/path"},
-            {"GlobalValue1", "1000"},
-            {"GlobalValue2", "2000"}
-        };
-
-        static private readonly IDictionary<string, string> _clMaps= new Dictionary<string, string> {
-            {"-o","GlobalValue1"},
-            {"--one", "GlobalValue1"},
-            {"-t", "GlobalValue2"},
-            {"--two", "GlobalValue2"}
-        };
         static void Main(string[] args)
         {
-            Configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(_defaultSettings)
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddCommandLine(args, _clMaps)
-                .Build();
-
-            Console.WriteLine($"AppContext.BaseDirectory - {AppContext.BaseDirectory}");
-            //Console.WriteLine(Configuration);
-
-            var _appSets = new flow.AppSettings();
-
-            Configuration.GetSection(nameof(flow.AppSettings)).Bind(_appSets);
-
-            Console.WriteLine($"Here is One - {_appSets.One.ToString()}");
-            Console.WriteLine($"Here is Two - {_appSets.Two.ToString()}");
-            Console.WriteLine($"Here is AppPath - {_appSets.AppPath.ToString()}");
-            Console.WriteLine($"Here is GlobalValue1 - {Configuration["GlobalValue1"]}");
-            Console.WriteLine($"Here is GlobalValue2 - {Configuration["GlobalValue2"]}");
-
-            Console.ReadLine();
+            parserResult = Parser.Default.ParseArguments<Options>(args)
+                .WithParsed(Run)
+                .WithNotParsed(errs => HandleErrors(errs));
         }
 
-      }
+        static void Run(Options options)
+        {
+            Console.WriteLine("parser SUCCESS");
+            if (!validate(options))
+            {
+                Console.WriteLine("Validation fail");
+                var helpText = GetHelp<Options>(parserResult);
+                Console.WriteLine(helpText);
+            }
+        }
 
-    public class AppSettings
-    {
-        public int One { get; set; }
-        public int Two { get; set; }
-        public string AppPath { get; set; }
+        static string GetHelp<T>(ParserResult<T> result)
+        {
+            return HelpText.AutoBuild(result, h => h, e => e);
+        }
+
+        //validate options
+        static bool validate(Options options)
+        {
+            // do validation 
+            if (options.FileName == null)
+                return false;
+            return true;
+        }
+
+        static void HandleErrors(IEnumerable<Error> errs)
+        {
+            Console.WriteLine("Parser Fail");
+        }
     }
+
 }
