@@ -1,51 +1,68 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Threading;
+using System.Collections.Generic;
 
 namespace flow
 {
     class Program
     {
-        static async Task DoSomeThingAsync()
+        static async Task Task1()
         {
-            Console.WriteLine("DoSomeThingAsync:This was call synchroniously");
-
-            //await Task.Delay(2000).ConfigureAwait(false);
-            await Task.Delay(5000);
-
-            Console.WriteLine("DoSomeThingAsyncThis was call after async pause");
+            Console.WriteLine("This is the first task");
+            await Task.Delay(TimeSpan.FromSeconds(6));
+            Console.WriteLine("First task has done");
         }
 
-        static void DoSomeThing(string a)
+        static async Task Task2()
         {
-            Console.WriteLine(a);
-            System.Threading.Thread.Sleep(5000);
+            Console.WriteLine("This is the second task");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            Console.WriteLine("Second task has done");
+        }
+
+        static async Task Task3()
+        {
+            Console.WriteLine("This is the third task");
+            await Task.Delay(TimeSpan.FromSeconds(4));
+            Console.WriteLine("Third task has done");
         }
 
         static void Main(string[] args)
         {
-            CallMe();
-
-            Console.WriteLine("This called after 'CallMe'");
+            MainMain();
             Console.ReadLine();
         }
-        static async Task CallMe()
+
+
+
+        static async void MainMain()
         {
-            Console.WriteLine("CallMe:Start app:");
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-            var timeout = Task.Delay(Timeout.InfiniteTimeSpan, cts.Token);
 
-            var task = new Task<Task>(DoSomeThingAsync, cts.Token);
-            var task1 = new Task(() => DoSomeThing("this is arg"), cts.Token);
-            var t = await Task.WhenAny(timeout, task);
+            var t1 = Task1();
+            var t2 = Task2();
+            var t3 = Task3();
 
-            if (t == timeout)
-                Console.WriteLine("TimeOut!");
+            var tasks = new List<Task> { t1, t2, t3 };
 
-            //await DoSomeThingAsync();
+            while (tasks.Any())
+            {
+                var t = await Task.WhenAny(tasks);
 
-            Console.WriteLine("End app");
+                if (t == t1)
+                    Console.WriteLine($"Now I can run code specially for the first task");
+                if (t == t2)
+                    Console.WriteLine($"Now I can run code specially for the second task");
+                if (t == t3)
+                    Console.WriteLine($"Now I can run code specially for the third task");
 
+                tasks.Remove(t);
+                
+            }
+
+            Console.WriteLine("This is last main output");
         }
+    
     }
+
 }
