@@ -1,68 +1,45 @@
 ﻿using System;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace flow
 {
     class Program
     {
-        static async Task Task1()
+        static async void Method1(CancellationToken ct)
         {
-            Console.WriteLine("This is the first task");
-            await Task.Delay(TimeSpan.FromSeconds(6));
-            Console.WriteLine("First task has done");
+            try
+            {
+                Console.WriteLine("Parallel task is begining:");
+
+                for (var i = 0; i < 10; ++i)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), ct);
+                    Console.WriteLine($"{i}_task");
+                }
+            }
+            catch (OperationCanceledException oce)
+            {
+                Console.WriteLine(oce.Message);
+            }
         }
 
-        static async Task Task2()
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("This is the second task");
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            Console.WriteLine("Second task has done");
-        }
+            var canc = new CancellationTokenSource();
+            Console.WriteLine("Let's start in parallel:");
 
-        static async Task Task3()
-        {
-            Console.WriteLine("This is the third task");
-            await Task.Delay(TimeSpan.FromSeconds(4));
-            Console.WriteLine("Third task has done");
-        }
+            await Task.Run(() => Method1(canc.Token), canc.Token);
 
-        static void Main(string[] args)
-        {
-            MainMain();
+
+            for (var i = 0; i < 10; ++i)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                Console.WriteLine($"{i}_main");
+                if (i == 4)
+                    canc.Cancel();
+            }
             Console.ReadLine();
         }
-
-
-
-        static async void MainMain()
-        {
-
-            var t1 = Task1();
-            var t2 = Task2();
-            var t3 = Task3();
-
-            var tasks = new List<Task> { t1, t2, t3 };
-
-            while (tasks.Any())
-            {
-                var t = await Task.WhenAny(tasks);
-
-                if (t == t1)
-                    Console.WriteLine($"Now I can run code specially for the first task");
-                if (t == t2)
-                    Console.WriteLine($"Now I can run code specially for the second task");
-                if (t == t3)
-                    Console.WriteLine($"Now I can run code specially for the third task");
-
-                tasks.Remove(t);
-                
-            }
-
-            Console.WriteLine("This is last main output");
-        }
-    
     }
-
 }
