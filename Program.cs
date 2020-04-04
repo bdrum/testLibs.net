@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Threading;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 
@@ -14,6 +16,14 @@ namespace flow
     {
         private double[,] matA;
         private double[,] matB;
+
+        public MatrixMult(int colCount, int colCount2, int rowCount)
+        {
+            this.colCount = colCount;
+            this.colCount2 = colCount2;
+            this.rowCount = rowCount;
+            Setup();
+        }
 
         #region Helper_Methods
         public double[,] InitializeMatrix(int rows, int cols)
@@ -72,27 +82,42 @@ namespace flow
 
         #region Parallel_Loop
         [Benchmark]
-        public void MultiplyMatricesParallel()
+        public void MultiplyMatricesParallel(CancellationToken canc)
         {
-            int matACols = matA.GetLength(1);
-            int matBCols = matB.GetLength(1);
-            int matARows = matA.GetLength(0);
-            var result = new double[matARows, matBCols];
-
-            // A basic matrix multiplication.
-            // Parallelize the outer loop to partition the source array by rows.
-            Parallel.For(0, matARows, i =>
+            try
             {
-                for (int j = 0; j < matBCols; j++)
-                {
-                    double temp = 0;
-                    for (int k = 0; k < matACols; k++)
-                    {
-                        temp += matA[i, k] * matB[k, j];
-                    }
-                    result[i, j] = temp;
-                }
-            }); // Parallel.For
+                int matACols = matA.GetLength(1);
+                int matBCols = matB.GetLength(1);
+                int matARows = matA.GetLength(0);
+                var result = new double[matARows, matBCols];
+                var po = new ParallelOptions();
+
+                // A basic matrix multiplication.
+                // Parallelize the outer loop to partition the source array by rows.
+                var res = Parallel.For(0, matARows, new ParallelOptions { CancellationToken = canc }, (i, state) =>
+                 {
+                     for (int j = 0; j < matBCols; j++)
+                     {
+                         double temp = 0;
+                         for (int k = 0; k < matACols; k++)
+                         {
+                             temp += matA[i, k] * matB[k, j];
+                             if (k == 900)
+                             {
+                                 Console.WriteLine($"{i}:  It will break:");
+                                 state.Stop();
+                             }
+                         }
+                         result[i, j] = temp;
+                     }
+                 }); // Parallel.For
+
+                Console.WriteLine("Complete parallel loop");
+            }
+            catch (OperationCanceledException oec)
+            {
+                Console.WriteLine("Operation was canceled after timeout");
+            }
         }
         #endregion
 
@@ -102,7 +127,18 @@ namespace flow
     { 
         static void Main(string[] args)
         {
-            var b = BenchmarkRunner.Run<MatrixMult>();
+            //var b = BenchmarkRunner.Run<MatrixMult>();
+            var s = Stopwatch.StartNew();
+            var m = new MatrixMult(1000, 5000, 3000);
+
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromSeconds(20));
+
+            m.MultiplyMatricesParallel(cts.Token);
+
+            s.Stop();
+
+            Console.WriteLine($"Elapsed time ms: {s.ElapsedMilliseconds}");
         }
     }
 }
