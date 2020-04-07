@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using System.Collections.Generic;
+using System.Linq;
 
 // TODO: show how to break the Parallel.For
 // TODO: show how to get the state of Parallel.For
@@ -127,18 +129,52 @@ namespace flow
     { 
         static void Main(string[] args)
         {
+            SyncLoop();
+
             //var b = BenchmarkRunner.Run<MatrixMult>();
+            //var s = Stopwatch.StartNew();
+            //var m = new MatrixMult(1000, 5000, 3000);
+
+            //var cts = new CancellationTokenSource();
+            //cts.CancelAfter(TimeSpan.FromSeconds(20));
+
+            //m.MultiplyMatricesParallel(cts.Token);
+
+            //s.Stop();
+
+            //Console.WriteLine($"Elapsed time ms: {s.ElapsedMilliseconds}");
+        }
+
+
+        static void SyncLoop()
+        {
+
+            Console.WriteLine("Start example with sync:");
             var s = Stopwatch.StartNew();
-            var m = new MatrixMult(1000, 5000, 3000);
+            var size = 1000000000;
+            var arr = Enumerable.Range(0, size).ToArray();
 
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(TimeSpan.FromSeconds(20));
+            long total = 0;
 
-            m.MultiplyMatricesParallel(cts.Token);
+            var result = Parallel.For(0, size, i => {
+
+                Interlocked.Add(ref total, i);
+
+            });
 
             s.Stop();
 
-            Console.WriteLine($"Elapsed time ms: {s.ElapsedMilliseconds}");
+            Console.WriteLine($"Sum of the arr is {total}");
+
+            Console.WriteLine($"The loop was completed: {result.IsCompleted}");
+            Console.WriteLine($"Elapsed time is {s.ElapsedMilliseconds} ms");
+
+            // output
+
+            //Start example with sync:
+            //Sum of the arr is 499999999500000000
+            //The loop was completed: True
+            //Elapsed time is 28918 ms
         }
     }
 }
