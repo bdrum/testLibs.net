@@ -129,7 +129,10 @@ namespace flow
     { 
         static void Main(string[] args)
         {
-            SyncLoop();
+            var size = 1000000000;
+            SyncLoop(size);
+            SyncLoopWithThreadLocalVar(size);
+
 
             //var b = BenchmarkRunner.Run<MatrixMult>();
             //var s = Stopwatch.StartNew();
@@ -146,20 +149,53 @@ namespace flow
         }
 
 
-        static void SyncLoop()
+        static void SyncLoopWithThreadLocalVar(int size)
         {
 
-            Console.WriteLine("Start example with sync:");
+            Console.WriteLine("Start example of sync loop with thread local var:");
             var s = Stopwatch.StartNew();
-            var size = 1000000000;
+            Console.WriteLine($"The size of array for sum: {size}");
             var arr = Enumerable.Range(0, size).ToArray();
 
             long total = 0;
 
-            var result = Parallel.For(0, size, i => {
+            var result = Parallel.For(0, size, () => 0, (int i, ParallelLoopState state, long subtotal) => {
 
-                Interlocked.Add(ref total, i);
+                subtotal += i;
+                return subtotal;
 
+            }, (subtotal) => { Interlocked.Add(ref total, subtotal); });
+
+            s.Stop();
+
+            Console.WriteLine($"Sum of the arr is {total}");
+
+            Console.WriteLine($"The loop was completed: {result.IsCompleted}");
+            Console.WriteLine($"Elapsed time is {s.ElapsedMilliseconds} ms");
+
+            // output
+
+            //Start example of sync loop with thread local var:
+            //The size of array for sum: 1000000000
+            //Sum of the arr is 499999999500000000
+            //The loop was completed: True
+            //Elapsed time is 2531 ms
+        }
+
+
+        static void SyncLoop(int size)
+        {
+
+            Console.WriteLine("Start example of sync loop:");
+            var s = Stopwatch.StartNew();
+            Console.WriteLine($"The size of array for sum: {size}");
+            var arr = Enumerable.Range(0, size).ToArray();
+
+            long total = 0;
+
+            var result = Parallel.For(0, size, (i) => {
+
+                 Interlocked.Add(ref total, i);
             });
 
             s.Stop();
@@ -171,10 +207,11 @@ namespace flow
 
             // output
 
-            //Start example with sync:
+            //Start example of sync loop:
+            //The size of array for sum: 1000000000
             //Sum of the arr is 499999999500000000
             //The loop was completed: True
-            //Elapsed time is 28918 ms
+            //Elapsed time is 30161 ms
         }
     }
 }
