@@ -1,217 +1,69 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Threading;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
-using System.Collections.Generic;
 using System.Linq;
-
-// TODO: show how to break the Parallel.For
-// TODO: show how to get the state of Parallel.For
-// TODO: show how to add local var and sync(agregate) iteration between itself
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace flow
 {
-    [RPlotExporter, RankColumn]
-    public class MatrixMult
+    class CustomData
     {
-        private double[,] matA;
-        private double[,] matB;
-
-        public MatrixMult(int colCount, int colCount2, int rowCount)
-        {
-            this.colCount = colCount;
-            this.colCount2 = colCount2;
-            this.rowCount = rowCount;
-            Setup();
-        }
-
-        #region Helper_Methods
-        public double[,] InitializeMatrix(int rows, int cols)
-        {
-            double[,] matrix = new double[rows, cols];
-
-            Random r = new Random();
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    matrix[i, j] = r.Next(100);
-                }
-            }
-            return matrix;
-        }
-        #endregion
-
-        [Params(200, 500, 1000, 2000)]
-        public int colCount;
-        [Params(200, 500)]
-        public int rowCount;
-        [Params(200)]
-        public int colCount2;
-
-        [GlobalSetup]
-        public void Setup()
-        {
-            matA = InitializeMatrix(rowCount, colCount);
-            matB = InitializeMatrix(colCount, colCount2);
-        }
-
-        #region Sequential_Loop
-        [Benchmark]
-        public void MultiplyMatricesSequential()
-        {
-            int matACols = matA.GetLength(1);
-            int matBCols = matB.GetLength(1);
-            int matARows = matA.GetLength(0);
-            var result = new double[matARows, matBCols];
-
-            for (int i = 0; i < matARows; i++)
-            {
-                for (int j = 0; j < matBCols; j++)
-                {
-                    double temp = 0;
-                    for (int k = 0; k < matACols; k++)
-                    {
-                        temp += matA[i, k] * matB[k, j];
-                    }
-                    result[i, j] += temp;
-                }
-            }
-        }
-        #endregion
-
-        #region Parallel_Loop
-        [Benchmark]
-        public void MultiplyMatricesParallel(CancellationToken canc)
-        {
-            try
-            {
-                int matACols = matA.GetLength(1);
-                int matBCols = matB.GetLength(1);
-                int matARows = matA.GetLength(0);
-                var result = new double[matARows, matBCols];
-                var po = new ParallelOptions();
-
-                // A basic matrix multiplication.
-                // Parallelize the outer loop to partition the source array by rows.
-                var res = Parallel.For(0, matARows, new ParallelOptions { CancellationToken = canc }, (i, state) =>
-                 {
-                     for (int j = 0; j < matBCols; j++)
-                     {
-                         double temp = 0;
-                         for (int k = 0; k < matACols; k++)
-                         {
-                             temp += matA[i, k] * matB[k, j];
-                             if (k == 900)
-                             {
-                                 Console.WriteLine($"{i}:  It will break:");
-                                 state.Stop();
-                             }
-                         }
-                         result[i, j] = temp;
-                     }
-                 }); // Parallel.For
-
-                Console.WriteLine("Complete parallel loop");
-            }
-            catch (OperationCanceledException oec)
-            {
-                Console.WriteLine("Operation was canceled after timeout");
-            }
-        }
-        #endregion
-
+        public long CreationTime;
+        public int Name;
+        public int ThreadNum;
     }
 
-    class Program
-    { 
+    public class Program
+    {
+        static async Task Task1()
+        {
+            Console.WriteLine("This is the first task");
+            await Task.Delay(TimeSpan.FromSeconds(6));
+            Console.WriteLine("First task has done");
+        }
+
+        static async Task Task2()
+        {
+            Console.WriteLine("This is the second task");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            Console.WriteLine("Second task has done");
+        }
+
+        static async Task Task3()
+        {
+            Console.WriteLine("This is the third task");
+            await Task.Delay(TimeSpan.FromSeconds(4));
+            Console.WriteLine("Third task has done");
+        }
+
         static void Main(string[] args)
         {
-            var size = 1000000000;
-            SyncLoop(size);
-            SyncLoopWithThreadLocalVar(size);
-
-
-            //var b = BenchmarkRunner.Run<MatrixMult>();
-            //var s = Stopwatch.StartNew();
-            //var m = new MatrixMult(1000, 5000, 3000);
-
-            //var cts = new CancellationTokenSource();
-            //cts.CancelAfter(TimeSpan.FromSeconds(20));
-
-            //m.MultiplyMatricesParallel(cts.Token);
-
-            //s.Stop();
-
-            //Console.WriteLine($"Elapsed time ms: {s.ElapsedMilliseconds}");
+            MainMain();
+            Console.ReadLine();
         }
 
-
-        static void SyncLoopWithThreadLocalVar(int size)
+        static async void MainMain()
         {
+            var t1 = Task1();
+            var t2 = Task2();
+            var t3 = Task3();
 
-            Console.WriteLine("Start example of sync loop with thread local var:");
-            var s = Stopwatch.StartNew();
-            Console.WriteLine($"The size of array for sum: {size}");
-            var arr = Enumerable.Range(0, size).ToArray();
+            var tasks = new List<Task> { t1, t2, t3 };
 
-            long total = 0;
+            while (tasks.Any())
+            {
+                var t = await Task.WhenAny(tasks);
 
-            var result = Parallel.For(0, size, () => 0, (int i, ParallelLoopState state, long subtotal) => {
+                if (t == t1)
+                    Console.WriteLine($"Now I can run code specially for the first task");
+                if (t == t2)
+                    Console.WriteLine($"Now I can run code specially for the second task");
+                if (t == t3)
+                    Console.WriteLine($"Now I can run code specially for the third task");
 
-                subtotal += i;
-                return subtotal;
+                tasks.Remove(t);
+            }
 
-            }, (subtotal) => { Interlocked.Add(ref total, subtotal); });
-
-            s.Stop();
-
-            Console.WriteLine($"Sum of the arr is {total}");
-
-            Console.WriteLine($"The loop was completed: {result.IsCompleted}");
-            Console.WriteLine($"Elapsed time is {s.ElapsedMilliseconds} ms");
-
-            // output
-
-            //Start example of sync loop with thread local var:
-            //The size of array for sum: 1000000000
-            //Sum of the arr is 499999999500000000
-            //The loop was completed: True
-            //Elapsed time is 2531 ms
-        }
-
-
-        static void SyncLoop(int size)
-        {
-
-            Console.WriteLine("Start example of sync loop:");
-            var s = Stopwatch.StartNew();
-            Console.WriteLine($"The size of array for sum: {size}");
-            var arr = Enumerable.Range(0, size).ToArray();
-
-            long total = 0;
-
-            var result = Parallel.For(0, size, (i) => {
-
-                 Interlocked.Add(ref total, i);
-            });
-
-            s.Stop();
-
-            Console.WriteLine($"Sum of the arr is {total}");
-
-            Console.WriteLine($"The loop was completed: {result.IsCompleted}");
-            Console.WriteLine($"Elapsed time is {s.ElapsedMilliseconds} ms");
-
-            // output
-
-            //Start example of sync loop:
-            //The size of array for sum: 1000000000
-            //Sum of the arr is 499999999500000000
-            //The loop was completed: True
-            //Elapsed time is 30161 ms
+            Console.WriteLine("This is last main output");
         }
     }
 }
