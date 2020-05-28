@@ -11,28 +11,26 @@ namespace flow
     {
         static void Main(string[] args)
         {
-
-            var ancedent = new Task(() => 
+            Console.WriteLine("Here is ancedent task");
+            var ancedent = Task.Run(() =>
             {
                 Console.WriteLine("Here is ancedent task");
                 throw new InvalidOperationException("Exception in ancedent task!");
             });
 
-            ancedent.ContinueWith((ancedent) =>
+
+            try
             {
-                if (ancedent.Exception != null)
-                    foreach (var ie in ancedent.Exception.InnerExceptions)
-                    {
-                        if (ie is InvalidOperationException)
-                            Console.WriteLine("Here is the continuation-handler for InvalidOperationException");
-                    }
-            }, TaskContinuationOptions.OnlyOnFaulted);
-
-            ancedent.Start();
-
-            Console.ReadLine();
-
-
+                ancedent.Wait();
+            }
+            catch (AggregateException ae)
+            {
+                ae.Handle(ex => {
+                    if (ex is InvalidOperationException)
+                        Console.WriteLine(ex.Message);
+                    return ex is InvalidOperationException;
+                });
+            }
         }
 
     }
