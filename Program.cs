@@ -20,10 +20,9 @@ namespace flow
     {
         public DbSet<SharedSpectra> Spectra { get; set; }
 
-        private readonly string connectionString; // = @"Data Source=;Initial Catalog=;User Id=;Password=";
-        public InfoContext(string cons) : base()
+        private readonly string connectionString = @"Data Source=
+        public InfoContext() : base()
         {
-            connectionString = cons;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -90,24 +89,24 @@ namespace flow
                 Console.WriteLine($"Start filling session: #{RunNumber}");
                 RunNumber++;
 
-                var filesFull = Directory.EnumerateFiles(@"D:\Spectra", "*.cnf", SearchOption.AllDirectories).ToList();
+                var filesFull = Directory.EnumerateFiles(@"D:\Spectra\2020\09\kji", "*.cnf", SearchOption.AllDirectories).ToList();
                 Console.WriteLine($"Number of file on disk: {filesFull.Count}");
 
-                var fileNames = filesFull.Select(ff => Path.GetFileNameWithoutExtension(ff)).ToList();
-                //files = files.Take(200);
-                List<string> spectras = null;
-                using (var ic = new InfoContext())
-                {
-                    spectras = ic.Spectra.Select(s => s.fileS).ToList();
-                }
+                //var fileNames = filesFull.Select(ff => Path.GetFileNameWithoutExtension(ff)).ToList();
+                ////files = files.Take(200);
+                //List<string> spectras = null;
+                //using (var ic = new InfoContext())
+                //{
+                //    spectras = ic.Spectra.Select(s => s.fileS).ToList();
+                //}
 
-                Console.WriteLine($"Number of spectras on disk: {spectras.Count}");
-                var diff = fileNames.Except(spectras).ToList();
-                foreach (var d in diff)
-                    Console.WriteLine($"The difference: {d}");
+                //Console.WriteLine($"Number of spectras on disk: {spectras.Count}");
+                //var diff = fileNames.Except(spectras).ToList();
+                //foreach (var d in diff)
+                //    Console.WriteLine($"The difference: {d}");
 
 
-                return;
+                //return;
 
 
                 var tasks = new List<Task>();
@@ -142,11 +141,12 @@ namespace flow
 
         private static async Task ProcessFile(string file)
         {
-            if (await Regata.Utilities.WebDavClientApi.UploadFile(file))
+            var ct = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            if (await Regata.Utilities.WebDavClientApi.UploadFile(file, ct.Token))
             {
                 var _ic = new InfoContext();
                 if (_ic.Spectra.Where(s => s.fileS == file).Any()) return;
-                var tkn = await Regata.Utilities.WebDavClientApi.MakeShareable(file);
+                var tkn = await Regata.Utilities.WebDavClientApi.MakeShareable(file, ct.Token);
                 await _ic.Spectra.AddAsync(new SharedSpectra() { token = tkn, fileS = Path.GetFileNameWithoutExtension(file) });
                 await _ic.SaveChangesAsync();
             }
