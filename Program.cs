@@ -8,97 +8,86 @@ using System.Text;
 
 namespace flow
 {
-    class Program
+  /// <summary>
+  /// Here I would like to try to test parallel file reading. 
+  /// The idea is to generate file with integer numbers on each line
+  /// and get sum of them in parallel.  
+  /// </summary>
+
+
+
+  // TODO: split file to n(threads) byte blocks
+  // NOTE: blocks should have similar sizes, but the end block 
+  //       may be a smaller. Also check that borders bytes are not
+  //       corrupted 
+  // TODO: read the blocks and get the sum
+  // TODO: benchmark it. compare with the seq. mode
+
+  public static class PFile
+  {
+    public const int N = 1000000;
+    public static ushort nt = 8;
+    public static long BlockSize = 10;
+    public const string tf = @"D:\GoogleDrive\Study\notes\Programming\dotnet\examples\flow\test.txt";
+
+    public static async Task Main(string[] args)
     {
-        public static int BlockSize = 0;
-        public static int ListProp { get; set; }
 
-        public static async Task Main(string[] args)
-        {
+      // GenerateFile();
+      // return;
+      var s = new Stopwatch();
+      s.Start();
 
-            var l = new List<int>() { 1, 2, 3 };
+      long l = 0;
 
+      using (var f = new FileStream(tf, FileMode.Open, FileAccess.Read))
+      {
+        l = f.Length; // FIXME: I really have to get byte numbers before reading? Looks it's cost nothing.
+      }
 
-            for (var i = 0; i < 10; ++i)
-            {
-                Inc(ref ListProp);
-                Inc(ref l[i]);
-                Console.WriteLine(i);
-            }
+      Console.WriteLine($"Byte numbers {l}");
 
-            return;
+      BlockSize = l / 2 + l % 2;
 
+      Console.WriteLine($"Size of block {BlockSize}");
 
+      var tsks = new Task<long>[nt];
 
-            var s = new Stopwatch();
-            s.Start();
+      for (uint i = 0; i < tsks.Length; ++i)
+      {
+        var task_num = i;
+        tsks[i] = Task.Run(() => GetBlockSum((long)task_num * BlockSize));
+      }
 
-            long l = 0;
+      Task.WaitAll(tsks.ToArray());
+      Console.WriteLine($"par sum:  {tsks.Select(t => t.Result).Sum()}");
+      Console.WriteLine($"Elapsed time for parallel reading is {s.Elapsed.TotalSeconds}");
 
-            string pth = @"D:\GoogleDrive\Study\notes\Programming\dotnet\examples\flow\test.txt";
+      s.Restart();
 
-            using (var f = new FileStream(pth, FileMode.Open, FileAccess.Read))
-            {
-                l = f.Length;
-            }
-            Console.WriteLine(l);
-            Console.WriteLine("answer: 5000000500000");
+      Console.WriteLine($"Sequenced sum {File.ReadAllLines(tf).Select(s => long.Parse(s)).Sum()}");
 
-            BlockSize = 10000;
-            var tsks = new Task<long>[(int)(l / BlockSize)];
-
-            for (long i = 0; i < tsks.Length; ++i)
-            {
-                tsks[i] = Task.Run(() => GetBlockSum(i));
-            }
-
-            Task.WaitAll(tsks.ToArray());
-            Console.WriteLine($"par sum:  {tsks.Select(t => t.Result).Sum()}");
-            Console.WriteLine(s.ElapsedMilliseconds);
-
-            s.Restart();
-
-            long sum = 0;
-
-            for (long i = BlockSize; i < l; i += BlockSize)
-            {
-                sum += GetBlockSum(i);
-            }
-            Console.WriteLine($"seq sum:  {sum}");
-            Console.WriteLine(s.ElapsedMilliseconds);
-
-            s.Restart();
-
-            var arrs = File.ReadAllLines(pth);
-            long ssm = arrs.AsParallel().Where(s => long.TryParse(s, out _)).Select(i => long.Parse(i)).Sum();
-            Console.WriteLine($"readlines sum:  {sum}");
-
-
-            Console.WriteLine(s.ElapsedMilliseconds);
-
-
-        }
-
-        public static void Inc(ref int i)
-        {
-            i++;
-        }
-
-        public static void GenerateFile()
-        {
-            var pth = @"D:\GoogleDrive\Study\notes\Programming\dotnet\examples\flow\test.txt";
-            File.WriteAllLines(pth, Enumerable.Range(1, 10000000).ToList().ConvertAll(i => i.ToString()));
-        }
-
-        public static long GetBlockSum(long position)
-        {
-            using (var f = new FileStream(@"D:\GoogleDrive\Study\notes\Programming\dotnet\examples\flow\test.txt", FileMode.Open, FileAccess.Read))
-            {
-                byte[] b1 = new byte[BlockSize];
-                f.Seek(position, SeekOrigin.Begin);
-                f.Read(b1, 0, b1.Length);
-                return Encoding.Default.GetString(b1).Split("\n").Where(s => long.TryParse(s, out _)).Select(i => long.Parse(i)).Sum();   
-            }
-        }
+      s.Stop();
+      Console.WriteLine($"Elapsed time for sequenced reading is {s.Elapsed.TotalSeconds}");
     }
+
+    public static void GenerateFile()
+    {
+      File.WriteAllLines(tf, Enumerable.Range(1, N).ToList().ConvertAll(i => i.ToString()));
+    }
+
+    public static long GetBlockSum(long position)
+    {
+      using (var f = new FileStream(tf, FileMode.Open, FileAccess.Read))
+      {
+        byte[] b1 = new byte[BlockSize];
+        f.Seek(position, SeekOrigin.Begin);
+        f.Read(b1, 0, b1.Length);
+        var tmpSArr = Encoding.Default.GetString(b1).Split("\n");
+        return tmpSArr.Where(s => long.TryParse(s, out _)).Select(i => long.Parse(i)).Sum();
+      }
+    }
+
+  }
+
 }
