@@ -1,84 +1,56 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
-using BenchmarkDotNet.Running;
-using System.Linq;
+using System.Collections.Generic;
+using System.Collections;
 namespace flow
 {
-  public class Program
-  {
-    public static void Main(string[] args)
+    public class Garage : IEnumerable<Car>
     {
-      var w = new Stopwatch();
-      w.Start();
-      Console.WriteLine($"Run1 is starting:");
-      Run1();
-      w.Stop();
-      Console.WriteLine($"Elapsed time: {w.Elapsed.TotalSeconds}");
-      w.Restart();
-      Console.WriteLine($"Run2 is starting:");
-      Run2();
-      Console.WriteLine($"Elapsed time: {w.Elapsed.TotalSeconds}");
+        private List<Car> cars = new List<Car>()
+            {
+            new Car(2, "merc"),
+            new Car(3, "audi"),
+            new Car(1, "bmw")
+            };
 
-      // var summary = BenchmarkRunner.Run<Sum>();
+        IEnumerator<Car> IEnumerable<Car>.GetEnumerator() => cars.GetEnumerator();
 
+        // IEnumerator IEnumerable.GetEnumerator() => cars.GetEnumerator();
     }
 
-    public static int _cnt = 300;
-    public static int _rn = 2;
-
-    public static void Run1()
+    public class Car
     {
-      var cl = new CircleList<int>(Enumerable.Range(0, _cnt));
+        public int Id;
+        public string Mark;
+        public Car(int id, string mark)
+        {
+            Id = id;
+            Mark = mark;
+        }
+        public override string ToString()
+        {
+            return $"Id={Id}, Mark={Mark}";
+        }
+    }
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var w = new Stopwatch();
+            w.Start();
+            Console.WriteLine($"Run1 is starting:");
+            Run1();
+            w.Stop();
+            Console.WriteLine($"Elapsed time: {w.Elapsed.TotalSeconds}");
+            w.Restart();
+            Console.WriteLine($"Run2 is starting:");
+            Run2();
+            Console.WriteLine($"Elapsed time: {w.Elapsed.TotalSeconds}");
 
-      // int roundNum = 0;
-      // foreach (var i in cl)
-      // {
-      //   // Console.WriteLine(i);
-      //   // Thread.Sleep(1000);
-      //   if (i == cl.Last())
-      //   {
-      //     roundNum++;
-      //     // Console.WriteLine($"Round {roundNum}");
-      //   }
-      //   if (roundNum == 10)
-      //   {
-      //     Console.WriteLine("It was the final round");
-      //     break;
-      //   }
-      // }
+            // var summary = BenchmarkRunner.Run<Sum>();
 
-      // Console.WriteLine("Go forward:");
-
-      for (var i = 0; i < _rn * _cnt; ++i)
-      {
-        cl.MoveNext();
-        // Console.WriteLine(cl.CurrentItem);
-        // Thread.Sleep(1000);
-      }
-
-      // Console.WriteLine("Go back:");
-
-      // for (var i = 0; i < 5; ++i)
-      // {
-      //   cl.MovePrev();
-      //   Console.WriteLine(cl.CurrentItem);
-      //   Thread.Sleep(1000);
-      // }
+        }
 
     }
-
-    public static void Run2()
-    {
-      var cl = new Regata.Core.Collections.CircularList<int>(Enumerable.Range(0, _cnt));
-      for (var i = 0; i < _rn * _cnt; ++i)
-      {
-        var o = cl.NextItem;
-        // Console.WriteLine(cl.NextItem);
-        // Thread.Sleep(1000);
-      }
-
-    }
-  }
 }
 
