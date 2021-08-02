@@ -1,9 +1,12 @@
-﻿using System;
+﻿using CanberraDataAccessLib;
+using CanberraDeviceAccessLib;
+// using CanberraInteractiveDataFitLib;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-// using CanberraDataAccessLib;
-using CanberraDeviceAccessLib;
-//using CanberraInteractiveDataFitLib;
+using System.Threading.Tasks;
+using Regata.Core.Hardware;
 
 namespace WorkFlowCore
 {
@@ -11,36 +14,38 @@ namespace WorkFlowCore
     {
         static void Main(string[] args)
         {
-            // the most probably this library can't work on linux, because 
-            // devices can be connected to windows only
-            // this means .net core doesn't have a sense, but anyway
-            // good that i can use it even for windows only!
-            // DataAccess dev = null;
-            DeviceAccess det = null;
+            DeviceAccess d = null;
+            DataAccess effFile = null;
+            DataAccess spctr = null;
+
             try
             {
-                // dev = new DataAccess();
-                det = new DeviceAccess();
-                det.Connect("D1");
-                Console.WriteLine(det.Param[ParamCodes.CAM_T_SGEOMTRY].ToString());
-                det.Param[ParamCodes.CAM_T_SGEOMTRY] = "120";
-                det.Save("", true);
-                // dev.Open(@"D:\Spectra\2020\03\dji-1\1108002.cnf");
+                effFile = new DataAccess();
+                effFile.Open(@"C:\GENIE2K\CALFILES\Efficiency\D1\D1-eff-10.CAL");
 
-                Console.WriteLine(det.Param[ParamCodes.CAM_T_SGEOMTRY].ToString());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                // spctr = new DataAccess();
+                // spctr.Open(@"D:\Spectra\2020\09\kji\1006421.cnf", OpenMode.dReadWrite);
+
+                d = new DeviceAccess();
+                d.Connect("D1");
+                // d.Param[CanberraDeviceAccessLib.ParamCodes.CAM_F_SQUANTERR] = 10;
+                // d.Param[CanberraDeviceAccessLib.ParamCodes.CAM_F_SSYSTERR] = 20;
+                // d.Param[CanberraDeviceAccessLib.ParamCodes.CAM_F_SSYSTERR] = 30;
+                // d.Param[CanberraDeviceAccessLib.ParamCodes.CAM_T_SGEOMTRY] = "2.5";
+                // Console.WriteLine(effFile.Calibrations.Mass);
+                effFile.CopyBlock(d, CanberraDataAccessLib.ClassCodes.CAM_CLS_GEOM);
+
             }
             finally
             {
-                // dev.Close();
-                det.Disconnect();
+                // d?.Disconnect();
+                if (effFile != null && effFile.IsOpen)
+                    effFile.Close();
 
+                if (spctr != null && spctr.IsOpen)
+                    spctr.Close();
             }
 
-            Console.ReadLine();
         }
 
     }
