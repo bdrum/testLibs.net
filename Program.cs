@@ -9,29 +9,50 @@ namespace flow
 {
     class Program
     {
-        static void Main(string[] args)
+
+        static bool _completed = false;
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Here is ancedent task");
-            var ancedent = Task.Run(() =>
-            {
-                Console.WriteLine("Here is ancedent task");
-                throw new InvalidOperationException("Exception in ancedent task!");
-            });
+            Console.WriteLine("await MyAwaitable with _completed is true");
+            _completed = true;
+            Console.WriteLine(await new MyAwaitable());
 
+            Console.WriteLine("await MyAwaitable with _completed is false");
+            _completed = false;
+            Console.WriteLine(await new MyAwaitable());
+        }
 
-            try
+        class MyAwaitable
+        {
+            public MyAwaiter GetAwaiter()
             {
-                ancedent.Wait();
-            }
-            catch (AggregateException ae)
-            {
-                ae.Handle(ex => {
-                    if (ex is InvalidOperationException)
-                        Console.WriteLine(ex.Message);
-                    return ex is InvalidOperationException;
-                });
+                return new MyAwaiter();
             }
         }
 
+        class MyAwaiter : INotifyCompletion
+        {
+            public void OnCompleted(Action cont)
+            {
+                Console.WriteLine("Called from OnCompleted()");
+                cont();
+            }
+
+            public bool IsCompleted
+            {
+                get
+                {
+                    Console.WriteLine($"IsCompleted property has called. Value is {_completed}");
+                    return _completed;
+                }
+            }
+
+            public int GetResult()
+            {
+                Console.WriteLine("Result is 5. Called from GetResult()");
+                return 5;
+            }
+
+        }
     }
 }
