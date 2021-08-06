@@ -1,51 +1,56 @@
 ﻿using CanberraDataAccessLib;
 using CanberraDeviceAccessLib;
-// using CanberraInteractiveDataFitLib;
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Regata.Core.Hardware;
+using Regata.Core.DataBase;
+using Regata.Core.DataBase.Models;
+using Microsoft.PowerShell;
+using System.Management.Automation;
 
 namespace WorkFlowCore
 {
     public class Program
     {
+
         static void Main(string[] args)
         {
-            DeviceAccess d = null;
-            DataAccess effFile = null;
-            DataAccess spctr = null;
 
+            DeviceAccessClass d = null;
+            DataAccessClass f = null;
             try
             {
-                effFile = new DataAccess();
-                effFile.Open(@"C:\GENIE2K\CALFILES\Efficiency\D1\D1-eff-10.CAL");
-
-                // spctr = new DataAccess();
-                // spctr.Open(@"D:\Spectra\2020\09\kji\1006421.cnf", OpenMode.dReadWrite);
-
-                d = new DeviceAccess();
-                d.Connect("D1");
-                // d.Param[CanberraDeviceAccessLib.ParamCodes.CAM_F_SQUANTERR] = 10;
-                // d.Param[CanberraDeviceAccessLib.ParamCodes.CAM_F_SSYSTERR] = 20;
-                // d.Param[CanberraDeviceAccessLib.ParamCodes.CAM_F_SSYSTERR] = 30;
-                // d.Param[CanberraDeviceAccessLib.ParamCodes.CAM_T_SGEOMTRY] = "2.5";
-                // Console.WriteLine(effFile.Calibrations.Mass);
-                effFile.CopyBlock(d, CanberraDataAccessLib.ClassCodes.CAM_CLS_GEOM);
-
+                d = new DeviceAccessClass();
+                d.Connect("D2");
+                // f = new DataAccessClass();
+                // f.Open(@"C:\GENIE2K\empty_spectra.cnf");
+                // d.Param[ParamCodes.CAM_L_PRCLRB4ACQ] = true;
+                // d.Param[ParamCodes.CAM_T_STITLE] = "";
+                // d.Param[ParamCodes.CAM_T_SCOLLNAME] = "";
+                // d.Param[ParamCodes.CAM_T_SIDENT] = "";
+                // d.Param[ParamCodes.CAM_F_SQUANT] = 0;
+                // d.Param[ParamCodes.CAM_F_SQUANTERR] = null;
+                // d.Param[ParamCodes.CAM_T_SUNITS] = null;
+                // d.Param[ParamCodes.CAM_F_SSYSERR] = null;
+                // d.Param[ParamCodes.CAM_F_SSYSTERR] = null;
+                // d.Param[ParamCodes.CAM_T_STYPE] = null;
+                // d.Param[ParamCodes.CAM_T_BUILDUPTYPE] = string.Empty;
+                // d.Param[ParamCodes.CAM_X_SDEPOSIT] = Encoding.UTF8.GetBytes(string.Empty).ToString();
+                // d.Param[ParamCodes.CAM_X_STIME] = Encoding.UTF8.GetBytes(string.Empty);
+                // d.Param[ParamCodes.CAM_T_SGEOMTRY] = string.Empty;
+                f.CopyBlock(d, CanberraDataAccessLib.ClassCodes.CAM_CLS_SAMP);
+                d.Save("", true);
             }
             finally
             {
-                // d?.Disconnect();
-                if (effFile != null && effFile.IsOpen)
-                    effFile.Close();
-
-                if (spctr != null && spctr.IsOpen)
-                    spctr.Close();
+                d?.Disconnect();
+                f?.Close();
             }
-
         }
 
     }
