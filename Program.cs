@@ -55,64 +55,29 @@ namespace WorkFlowCore
                 // ML_ErrorCallBackDelegate(p.ErrorHandlerDel);
 
                 XemoDLL.ML_DeIniCom();
-                // XemoDLL.ML_IniUsb(0, "107376");
-                XemoDLL.ML_IniUsb(0, "114005");
+                XemoDLL.ML_IniUsb(0, "107376");
+                // XemoDLL.ML_IniUsb(0, "114005");
                 // XemoDLL.ML_ComSelect(4);
                 // XemoDLL.MB_SysControl(XemoKonst.m_Break);
                 // XemoDLL.MB_SysControl(XemoKonst.m_Halt);
-                XemoDLL.MB_SysControl(XemoKonst.m_Reset);
-                XemoDLL.MB_ResErr();
+                // XemoDLL.MB_SysControl(XemoKonst.m_Reset);
+                // XemoDLL.MB_ResErr();
                 // XemoDLL.MB_Waitinp(12, 1, 1, 1);
 
                 // XemoDLL.ML_SetErrState(XemoKonst.NO_ERR);
                 // XemoDLL.MB_SetFifo(XemoKonst.m_FfClear);
 
+                Console.WriteLine($"XemoType: {XemoDLL.MB_Get(1004)}");
+                Console.WriteLine($"XemoExtent: {XemoDLL.MB_Get(1007)}");
+
+                Console.WriteLine();
 
                 Console.WriteLine(XemoDLL.ML_GetRcvState());
                 Console.WriteLine(XemoDLL.MB_GetState());
                 Console.WriteLine(XemoDLL.ML_GetErrState());
                 Console.WriteLine(XemoDLL.ML_GetErrCode());
 
-                // XemoDLL.ML_RunErrCallBack(((int)Handler(new IntPtr(XemoDLL.MB_Get(XemoKonst.m_ErrNo)))));
-
-                // XemoDLL.MB_ASet(ax, XemoKonst.m_APos, -10000);
-
-                // InitAxisParam(0);
-                // InitAxisParam(1);
-                InitAxisParam(ax);
-
-                // XemoDLL.MB_ASet(0, XemoKonst.m_SlLimit, 0);
-                // // XemoDLL.MB_ASet(0, XemoKonst.m_SrLimit, 0);
-
-
-                // XemoDLL.MB_ASet(1, XemoKonst.m_Zero, 1);
-                // XemoDLL.MB_ASet(1, XemoKonst.m_Pmode, 0);
-                // XemoDLL.MB_ASet(1, XemoKonst.m_RPos, -10000);
-
-                // XemoDLL.MB_ASet(1, XemoKonst.m_LDecel, 0);
-                // XemoDLL.MB_Home(ax);
-                // XemoDLL.MB_Still(ax);
-                // Console.ReadLine();
-                // XemoDLL.MB_ASet(1, XemoKonst.m_LDecel, 500000);
-                // XemoDLL.MB_Still(ax);
-
-                // Task.Run(() =>
-                // {
-                //     int n = 0;
-                //     while (true)
-                //     {
-                //         Task.Delay(TimeSpan.FromSeconds(1)).Wait();
-                //         var apos = XemoDLL.MB_AGet(ax, XemoKonst.m_APos);
-                //         var rpos = XemoDLL.MB_AGet(ax, XemoKonst.m_RPos);
-                //         Console.WriteLine($"APos = {apos}, RPos = {rpos}");
-                //         // if (n >= 3)
-                //         // {
-                //         //     Console.WriteLine($"Setting error state");
-                //         //     XemoDLL.ML_SetErrState(XemoKonst.ERR_CANCEL);
-                //         // }
-                //         n++;
-                //     }
-                // });
+                // InitAxisParam(ax);
 
                 var speed = 5000;
                 var keepRunning = true;
@@ -153,7 +118,7 @@ namespace WorkFlowCore
                             Console.WriteLine($"sr lim: {XemoDLL.MB_AGet(ax, XemoKonst.m_SrLimit)}");
                             Console.WriteLine($"Vel: {XemoDLL.MB_AGet(ax, XemoKonst.m_Speed)}");
                             Console.WriteLine($"MaxVel: {XemoDLL.MB_AGet(ax, XemoKonst.m_MaxVel)}");
-                            Console.WriteLine($"IpAccel: {XemoDLL.MB_AGet(ax, XemoKonst.m_IpAccel)}");
+                            //     Console.WriteLine($"IpAccel: {XemoDLL.MB_AGet(ax, XemoKonst.m_IpAccel)}");
                             Console.WriteLine($"Accel: {XemoDLL.MB_AGet(ax, XemoKonst.m_Accel)}");
 
                             break;
@@ -174,7 +139,7 @@ namespace WorkFlowCore
                             XemoDLL.MB_ASet(1, XemoKonst.m_APos, -75000);
                             XemoDLL.MB_ASet(1, XemoKonst.m_LDecel, 500000);
                             XemoDLL.MB_ASet(1, XemoKonst.m_SrLimit, 76000);
-                            XemoDLL.MB_ASet(1, XemoKonst.m_SlLimit, 1000);
+                            XemoDLL.MB_ASet(1, XemoKonst.m_SlLimit, 0);
 
                             //     XemoDLL.MB_ASet(0, XemoKonst.m_APos, -37300);
                             //     XemoDLL.MB_ASet(0, XemoKonst.m_LDecel, 500000);
@@ -214,6 +179,11 @@ namespace WorkFlowCore
                             XemoDLL.MB_SysControl(XemoKonst.m_Reset);
                             XemoDLL.MB_ResErr();
 
+                            break;
+
+                        case "get_params":
+                            for (var i = 0; i <= 4003; ++i)
+                                Console.WriteLine($"{i};{XemoDLL.MB_Get(i)}");
                             break;
 
 
@@ -282,63 +252,34 @@ namespace WorkFlowCore
             var XemoExtent = (long)XemoDLL.MB_Get(1007);
 
 
-            XemoDLL.MB_ASet((short)num, 2031, (int)MOTOR_CURRENT[num]);
-            XemoDLL.MB_ASet((short)num, 2052, (int)MOTOR_STOP_CURRENT[num]);
-            XemoDLL.MB_ASet((short)num, 2050, (int)MICROSTEP_DEFINER[num]);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_Current, 50);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_StopCurr, 50);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_Micro, 2);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_Uscale, 800);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_Iscale, 10000);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_Speed, 2000);
+
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_Accel, 10000);
 
 
-            XemoDLL.MB_ASet((short)num, 2041, (int)Math.Round((double)INC_PER_REVOLUTION[num] / (double)MICROSTEP_DEFINER[num]));
+            //     XemoDLL.MB_ASet((short)num, XemoKonst.m_IpGroup, 1);
+            //     XemoDLL.MB_ASet((short)num, XemoKonst.m_IpSpeed, 1000);
+            //     XemoDLL.MB_ASet((short)num, XemoKonst.m_IpAccel, 10000);
 
-            XemoDLL.MB_ASet((short)num, 2040, (int)Math.Round((double)(unchecked(MM_PER_REVOLUTION[num] * 100f))));
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_Vmin, 1000);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_LDecel, 10000);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_H1Speed, 2000);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_H2Speed, -100);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_H3Speed, 10000);
 
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_SlLimit, -10000);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_SrLimit, 10000);
 
-            XemoDLL.MB_ASet((short)num, 2000, (int)(MAX_VELOCITY[num] * 100L));
-            XemoDLL.MB_ASet((short)num, 2001, (int)((long)Math.Round((double)(unchecked(ACCELERATION_FACTOR[num] * (float)(checked(MAX_VELOCITY[num] * 100L)))))));
-            XemoDLL.MB_ASet((short)num, 2002, (int)((long)Math.Round((double)(unchecked(DECELERATION_FACTOR[num] * (float)(checked(MAX_VELOCITY[num] * 100L)))))));
+            XemoDLL.MB_ASet((short)num, 2056, -2000);
+            XemoDLL.MB_ASet((short)num, XemoKonst.m_FErrWin, 200);
 
-            XemoDLL.MB_ASet((short)num, 2003, (int)Math.Round((double)(START_STOP_FREQUENCY[num] * 100L) / 10.0));
-
-            XemoDLL.MB_ASet((short)num, 2020, (int)(REF_VELOCITY_H1[num] * 100L));
-
-            XemoDLL.MB_ASet((short)num, 2021, (int)(REF_VELOCITY_H2[num] * 100L));
-            XemoDLL.MB_ASet((short)num, 2022, (int)(REF_VELOCITY_H3[num] * 100L));
-            XemoDLL.MB_ASet((short)num, 2023, (int)((long)Math.Round((double)(unchecked(ZERO_REF_OFFSET[num] * 100f)))));
-            XemoDLL.MB_ASet((short)num, 2045, 0);
-            XemoDLL.MB_ASet((short)num, 2046, (int)(TRAVEL_AXIS[num] * 100L));
             XemoDLL.MB_IoSet((short)num, 0, 3, 4000, (short)POLARITY_SWITCHES[num]);
-            XemoDLL.MB_ASet((short)num, 2048, (int)((long)Math.Round((double)(unchecked(BLASH[num] * 100f)))));
-            bool flag = XTYPE[num] != 0L;
-            if (flag)
-            {
-                XemoDLL.MB_ASet((short)num, 2013, (int)XTYPE[num]);
-            }
-            flag = (GANTRY_ACHSE[num] != 0L);
-            if (flag)
-            {
-                XemoDLL.MB_ASet((short)num, 2049, (int)GANTRY_ACHSE[num]);
-            }
-            flag = (JERKMS[num] != 0L);
-            if (flag)
-            {
-                XemoDLL.MB_ASet((short)num, 2007, (int)JERKMS[num]);
-            }
-            flag = (INC_MONITORING_ENCODER[num] != 0L);
-            if (flag)
-            {
-                XemoDLL.MB_ASet((short)num, 2056, (int)INC_MONITORING_ENCODER[num]);
-                XemoDLL.MB_ASet((short)num, 2032, (int)POSITION_ERROR[num]);
-            }
-            flag = (XemoType != 448L);
-            if (flag)
-            {
-                XemoDLL.MB_ASet((short)num, 2004, (int)((long)Math.Round((double)(unchecked((float)(checked(MAX_VELOCITY[num] * 100L)) * EMERGCY_DECEL_FACTOR[num])))));
-            }
-            flag = (BRAKE[num] >= 0);
-            if (flag)
-            {
-                int num2 = BRAKE[num];
-                XemoDLL.MB_ASet((short)num, 2035, 10 + 4096 * num2 + 256);
-            }
+
         }
 
 
