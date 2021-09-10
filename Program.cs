@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Text.RegularExpressions;
@@ -9,102 +10,76 @@ namespace WorkFlowCore
 {
     public class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            SampleChanger s = null;
+            var ct = new CancellationTokenSource();
+            Task.Run(async () => await Run(ct.Token));
+            while (true)
+            {
+                var l = Console.ReadLine();
+                if (l.Contains("q"))
+                {
+                    ct.Cancel();
+                    break;
+                }
+            }
+        }
+
+        static async Task Run(CancellationToken ct)
+        {
+
+            SampleChanger[] s = null;
             try
             {
-                s = new SampleChanger(114005);
+                s = new SampleChanger[] { new SampleChanger(107374), new SampleChanger(107375) };
 
-                // s.PositionReached += () => { Console.WriteLine("Position reached!"); };
+                await Task.WhenAll(s.Select(async ss => await HomeAsync(ss, ct)));
+                Console.WriteLine("We are home!");
+                await Task.WhenAll(s.Select(async ss => await MoveToPos(ss, ct)));
+                Console.WriteLine("We are at the position!");
 
-                var reg = new Regex(@"\d{1,2}");
-
-                while (true)
-                {
-                    var l = Console.ReadLine();
-
-                    if (l.Contains("put") && l.Contains("det"))
-                    {
-                        var cell = short.Parse(reg.Match(l).Value);
-                        await s.TakeSampleFromTheCellAsync(cell);
-                        await s.PutSampleAboveDetectorWithHeightAsync(Heights.h10);
-                    }
-
-                    if (l.Contains("put"))
-                    {
-                        var cell = short.Parse(reg.Match(l).Value);
-                        await s.PutSampleToTheDiskAsync(cell);
-
-                    }
-                    else if (l.Contains("take"))
-                    {
-                        var cell = short.Parse(reg.Match(l).Value);
-                        await s.TakeSampleFromTheCellAsync(cell);
-                    }
-
-                    else if (l.Contains("det"))
-                    {
-                        var h = Heights.h2p5;
-                        if (l.Contains("5")) h = Heights.h5;
-                        if (l.Contains("2.5")) h = Heights.h2p5;
-                        if (l.Contains("20")) h = Heights.h20;
-                        if (l.Contains("10")) h = Heights.h10;
-                        await s.PutSampleAboveDetectorWithHeightAsync(h);
-                    }
-
-                    else if (l == "q")
-                    {
-                        break;
-                    }
-                    else if (l == "h")
-                    {
-                        await s.HomeAsync();
-                        Console.WriteLine("I'm at home");
-                    }
-                    else if (l == "u")
-                    {
-                        s.MoveUp(5000);
-                    }
-                    else if (l == "d")
-                    {
-                        s.MoveDown(5000);
-                    }
-                    else if (l == "r")
-                    {
-                        s.MoveRight(5000);
-                    }
-                    else if (l == "l")
-                    {
-                        s.MoveLeft(5000);
-                    }
-                    else if (l == "cw")
-                    {
-                        s.MoveClockwise(5000);
-                    }
-                    else if (l == "ccw")
-                    {
-                        s.MoveСounterclockwise(5000);
-                    }
-                    else
-                    {
-                        s.Stop();
-                    }
-                }
-
-                Console.WriteLine("Current position is");
-                Console.WriteLine(s.CurrentPosition.ToString());
 
             }
             catch (TaskCanceledException)
             {
                 Console.WriteLine("The task was cancelled");
+                await Task.WhenAll(s.Select(ss => Task.Run(() => Stop(ss))));
+
             }
             finally
             {
-                s?.Stop();
-                s?.Disconnect();
+                foreach (var sc in s)
+                {
+                    sc.Stop();
+                    sc.Disconnect();
+                }
             }
         }
+
+        private static async Task HomeAsync(SampleChanger sc, CancellationToken ct)
+        {
+            await sc?.HomeAsync(ct);
+            Console.WriteLine($"{sc.PairedDetector} at home");
+
+        }
+
+        private static async Task MoveToPos(SampleChanger sc, CancellationToken ct)
+        {
+            var p = new Position()
+            {
+                X = 50000,
+                Y = 37300
+            };
+            await sc?.MoveToPositionAsync(p, moveAlongAxisFirst: Axes.X, ct);
+            Console.WriteLine($"{sc.PairedDetector} at position");
+
+        }
+
+        private static void Stop(SampleChanger sc)
+        {
+            sc?.Stop();
+            Console.WriteLine($"{sc.PairedDetector} has stopped");
+        }
+
     }
 }
