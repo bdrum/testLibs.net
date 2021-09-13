@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
@@ -10,33 +11,46 @@ namespace WorkFlowCore
 {
     public class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            var ct = new CancellationTokenSource();
-            Task.Run(async () => await Run(ct.Token));
-            while (true)
-            {
-                var l = Console.ReadLine();
-                if (l.Contains("q"))
-                {
-                    ct.Cancel();
-                    break;
-                }
-            }
-        }
-
-        static async Task Run(CancellationToken ct)
-        {
-
+            var ct1 = new CancellationTokenSource(TimeSpan.FromMinutes(1)).Token;
             SampleChanger[] s = null;
             try
             {
-                s = new SampleChanger[] { new SampleChanger(107374), new SampleChanger(107375) };
+                s = new SampleChanger[] { new SampleChanger(107375), new SampleChanger(107374) };
 
-                await Task.WhenAll(s.Select(async ss => await HomeAsync(ss, ct)));
+                s[0].ErrorOccurred += (i, j) => { Console.WriteLine($"{i}, {j}"); };
+                s[1].ErrorOccurred += (i, j) => { Console.WriteLine($"{i}, {j}"); };
+
+                s[0].PositionReached += async (s) => await PositionReachedHandler(s);
+                s[1].PositionReached += async (s) => await PositionReachedHandler(s);
+
+
+                var tasks = new List<Task>();
+                foreach (SampleChanger ss in s)
+                {
+                    SampleChanger x = ss;
+                    tasks.Add(Task.Factory.StartNew((xx) => (xx as SampleChanger), x));
+                }
+
+                await Task.WhenAll(tasks);
+
                 Console.WriteLine("We are home!");
-                await Task.WhenAll(s.Select(async ss => await MoveToPos(ss, ct)));
+
+                tasks.Clear();
+
+                var ct2 = new CancellationTokenSource(TimeSpan.FromMinutes(1)).Token;
+
+                foreach (SampleChanger ss in s)
+                {
+                    SampleChanger x = ss;
+                    tasks.Add(Task.Factory.StartNew((xx) => MoveToPosAsync(xx as SampleChanger), x));
+                }
+
+                await Task.WhenAll(tasks.ToArray());
+
                 Console.WriteLine("We are at the position!");
+                Console.ReadLine();
 
 
             }
@@ -56,22 +70,55 @@ namespace WorkFlowCore
             }
         }
 
-        private static async Task HomeAsync(SampleChanger sc, CancellationToken ct)
+        private async static Task PositionReachedHandler(SampleChanger sc)
         {
-            await sc?.HomeAsync(ct);
-            Console.WriteLine($"{sc.PairedDetector} at home");
+            Console.WriteLine($"{sc.PairedDetector} has reached the position.Move next!");
+            await MoveToPosAsync(sc);
+        }
+
+        private async static Task HomeAsync(SampleChanger sc)
+        {
+            using (var ct = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+            {
+                await sc?.HomeAsync(ct.Token);
+                Console.WriteLine($"{sc.PairedDetector} at home");
+            }
 
         }
 
-        private static async Task MoveToPos(SampleChanger sc, CancellationToken ct)
+        private async static Task MoveToPosAsync(SampleChanger sc, int x = 30000)
         {
-            var p = new Position()
+            if (sc.CurrentPosition.X == 30000)
+                x = 60000;
+
+            var ct = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+            try
             {
-                X = 50000,
-                Y = 37300
-            };
-            await sc?.MoveToPositionAsync(p, moveAlongAxisFirst: Axes.X, ct);
-            Console.WriteLine($"{sc.PairedDetector} at position");
+                Console.WriteLine($"{sc.PairedDetector} is going to position");
+                var p = new Position()
+                {
+                    X = x,
+                    Y = 37300
+                };
+                await sc?.MoveToPositionAsync(p, moveAlongAxisFirst: Axes.X, ct.Token);
+                Console.WriteLine($"{sc.PairedDetector} at position");
+
+                await Task.Delay(TimeSpan.FromSeconds(5));
+            }
+            catch (TaskCanceledException)
+            {
+                await HomeAsync(sc);
+            }
+            finally
+            {
+                ct.Dispose();
+            }
+        }
+
+        private static async Task XemoCycle(SampleChanger sc)
+        {
+            await HomeAsync(sc);
+            await MoveToPosAsync(sc);
 
         }
 
