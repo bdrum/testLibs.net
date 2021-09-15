@@ -13,8 +13,8 @@ namespace WorkFlowCore
     {
         static async Task Main(string[] args)
         {
-
-            await Task.WhenAll(Run(107374), Run(107375), Run(107376), Run(114005)); //
+            // Run(107374), Run(107375), Run(107376), Run(114005)   
+            await Task.WhenAll(Run(114005));
             Console.WriteLine("Press enter for exit...");
             Console.ReadLine();
         }
@@ -27,9 +27,11 @@ namespace WorkFlowCore
 
                 s1.ErrorOccurred += (i, j) => { Console.WriteLine($"{i}, {j}"); };
 
-                s1.PositionReached += async (s11) => await PositionReachedHandler(s11).ConfigureAwait(false);
+                s1.PositionReached += async (s11) => await PositionReachedHandler(s11);
 
                 await XemoCycle(s1);
+
+                await Task.Delay(TimeSpan.FromMinutes(1));
 
             }
             catch (TaskCanceledException)
@@ -46,6 +48,7 @@ namespace WorkFlowCore
 
         private static async Task PositionReachedHandler(SampleChanger sc)
         {
+            await Task.Delay(TimeSpan.FromSeconds(5));
             Console.WriteLine($"{sc.PairedDetector} has reached the position.Move next!");
             await MoveToPosAsync(sc);
         }
