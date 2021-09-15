@@ -13,51 +13,35 @@ namespace WorkFlowCore
     {
         static async Task Main(string[] args)
         {
-            var ct1 = new CancellationTokenSource(TimeSpan.FromMinutes(1)).Token;
-            //SampleChanger[] s = null;
-            var s1 = new SampleChanger(107374);
-            var s2 = new SampleChanger(107375);
+
+            await Task.WhenAll(Run(107374), Run(107375), Run(107376), Run(114005)); //
+            Console.WriteLine("Press enter for exit...");
+            Console.ReadLine();
+        }
+        static async Task Run(int id)
+        {
+
+            var s1 = new SampleChanger(id);
             try
             {
-                //s = new SampleChanger[] { new SampleChanger(107374), new SampleChanger(107375) };
 
                 s1.ErrorOccurred += (i, j) => { Console.WriteLine($"{i}, {j}"); };
-                s2.ErrorOccurred += (i, j) => { Console.WriteLine($"{i}, {j}"); };
 
                 s1.PositionReached += async (s11) => await PositionReachedHandler(s11).ConfigureAwait(false);
-                s2.PositionReached += async (s22) => await PositionReachedHandler(s22).ConfigureAwait(false);
 
-                //var tasks = new List<Task>();
-                //foreach (var x in s)
-                //{
-                //    SampleChanger ss = x;
-                //    tasks.Add(Task.Factory.StartNew(async (xx) => await XemoCycle(xx as SampleChanger), ss));
-                //}
-
-                //await Task.WhenAll(tasks);
-
-                await Task.WhenAll(XemoCycle(s1), XemoCycle(s2));
-                //await Task.WhenAll(HomeAsync(s1), HomeAsync(s2));
-                //await Task.WhenAll(MoveToPosAsync(s1), MoveToPosAsync(s2));
-
-                Console.WriteLine("Press enter for exit...");
-                Console.ReadLine();
+                await XemoCycle(s1);
 
             }
             catch (TaskCanceledException)
             {
                 Console.WriteLine("The task was cancelled");
                 s1.Stop();
-                s2.Stop();
             }
             finally
             {
                 s1.Stop();
                 s1.Disconnect();
-                s2.Stop();
-                s2.Disconnect();
             }
-            Console.ReadLine();
         }
 
         private static async Task PositionReachedHandler(SampleChanger sc)
