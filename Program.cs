@@ -11,10 +11,15 @@ namespace WorkFlowCore
 {
     public class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
             // Run(107374), Run(107375), Run(107376), Run(114005)   
-            await Task.WhenAll(Run(114005));
+            // await Task.WhenAll(Run(114005));
+            Console.WriteLine("Creating new AppDomain.");
+            AppDomain domain = AppDomain.CreateDomain("MyDomain");
+
+            Console.WriteLine("Host domain: " + AppDomain.CurrentDomain.FriendlyName);
+            Console.WriteLine("child domain: " + domain.FriendlyName);
             Console.WriteLine("Press enter for exit...");
             Console.ReadLine();
         }
