@@ -1,58 +1,52 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Threading;
-using System.Runtime.CompilerServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace flow
 {
     class Program
     {
-
-        static bool _completed = false;
         static async Task Main(string[] args)
         {
-            Console.WriteLine("await MyAwaitable with _completed is true");
-            _completed = true;
-            Console.WriteLine(await new MyAwaitable());
+            Console.WriteLine("This is the initial point");
 
-            Console.WriteLine("await MyAwaitable with _completed is false");
-            _completed = false;
-            Console.WriteLine(await new MyAwaitable());
+
+            var t = new Program();
+            // await t.Meth();
+
+            // var t1 = new Task(async () => await t.Meth());
+            // var t2 = new Task(async () => await t.Meth());
+            // var t3 = new Task(async () => await t.Meth());
+
+            // t1.Start();
+            // t2.Start();
+            // t3.Start();
+            await Task.WhenAll(t.Meth(), t.Meth(), t.Meth());
+
+            Console.WriteLine("This is the end");
+            Console.ReadLine();
+
         }
 
-        class MyAwaitable
+        private async Task RunAllMeth()
         {
-            public MyAwaiter GetAwaiter()
-            {
-                return new MyAwaiter();
-            }
-        }
 
-        class MyAwaiter : INotifyCompletion
+        }
+        private async Task Meth()
         {
-            public void OnCompleted(Action cont)
-            {
-                Console.WriteLine("Called from OnCompleted()");
-                cont();
-            }
 
-            public bool IsCompleted
+            for (var i = 0; i < 10; ++i)
             {
-                get
-                {
-                    Console.WriteLine($"IsCompleted property has called. Value is {_completed}");
-                    return _completed;
-                }
-            }
-
-            public int GetResult()
-            {
-                Console.WriteLine("Result is 5. Called from GetResult()");
-                return 5;
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                Console.WriteLine(i);
             }
 
         }
+
+
+
+
     }
 }
