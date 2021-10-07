@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package gxemo;
+
+service Xemo
+{
+
+  rpc DeviceIsReady       (DeviceIsReadyRequest)       returns (TakeSampleFromCellReply);
+  rpc SampleHasTaken      (SampleHasTakenRequest)      returns (PutSampleAboveDetReply);
+  rpc SampleAboveDetector (SampleAboveDetectorRequest) returns (PutSampleToDiskReply);
+  rpc PutSampleToDisk     (SampleInCellRequest)        returns (TakeSampleFromCellReply);
+  rpc DeviceError         (ErrorOccurredRequest)       returns (ErrorOccurredReply);
+  rpc StopDevice          (StopRequest)                returns (StopReply);
+
+}
+
+// requests
+
+message DeviceIsReadyRequest       {int32 devId = 1; bool  isReady   = 2;}
+message SampleHasTakenRequest      {int32 devId = 1; bool  isTaken   = 2;}
+message SampleAboveDetectorRequest {int32 devId = 1; bool  isAbove   = 2;}
+message SampleInCellRequest        {int32 devId = 1; bool  isInCell  = 2;}
+message ErrorOccurredRequest       {int32 devId = 1; int32 errCode   = 2;}
+message StopRequest                {int32 devId = 1; bool  isStopped = 2;}
+
+// replies
+
+message StopReply               { }
+message ErrorOccurredReply      { }
+message TakeSampleFromCellReply { int32 cellNum = 1; }
+message PutSampleToDiskReply    { int32 cellNum = 1; }
+message PutSampleAboveDetReply 
+{  enum Height
+   {
+      H2p5 = 0;
+      H5 = 1;
+      H10 = 2;
+      H20 = 3;
+   }
+   Height h = 1; 
+}
