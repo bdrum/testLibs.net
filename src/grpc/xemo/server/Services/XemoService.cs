@@ -7,8 +7,11 @@ using Gxemo;
 
 namespace Server
 {
+
+
     public class XemoService : Xemo.XemoBase
     {
+        private int _currentCell = 0;
         private readonly ILogger<XemoService> _logger;
         public XemoService(ILogger<XemoService> logger)
         {
@@ -23,8 +26,9 @@ namespace Server
                 Console.WriteLine("Device is not ready");
                 return null;
             }
-            Console.WriteLine($"Start movement to position one from device {request.DevId}");
-            var t = new TakeSampleFromCellReply { CellNum = 1 };
+            _currentCell++;
+            Console.WriteLine($"Start movement to cell {_currentCell} one from device {request.DevId}");
+            var t = new TakeSampleFromCellReply { CellNum = _currentCell };
             return Task.FromResult(t);
         }
 
@@ -36,29 +40,37 @@ namespace Server
                 Console.WriteLine("Device was not taken");
                 return null;
             }
-            var t = new PutSampleAboveDetReply { H = PutSampleAboveDetReply.Types.Height.H2P5 };
+            var t = new PutSampleAboveDetReply { H = PutSampleAboveDetReply.Types.Height.H20 };
             return Task.FromResult(t);
         }
 
-        public override Task<PutSampleToDiskReply> SampleAboveDetector(SampleAboveDetectorRequest request, ServerCallContext context)
+        public override async Task<PutSampleToDiskReply> SampleAboveDetector(SampleAboveDetectorRequest request, ServerCallContext context)
         {
             if (!request.IsAbove)
             {
                 Console.WriteLine("Device is not above detector");
                 return null;
             }
-            var t = new PutSampleToDiskReply { CellNum = 1 };
-            return Task.FromResult(t);
+
+            Console.WriteLine($"Device '{request.DevId}' has wainting acquisition...");
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            Console.WriteLine($"Device '{request.DevId}' acquisition has done. Go to cell {_currentCell}");
+
+            var t = new PutSampleToDiskReply { CellNum = _currentCell };
+
+            return await Task.FromResult(t);
         }
 
-        public override Task<TakeSampleFromCellReply> PutSampleToDisk(SampleInCellRequest request, ServerCallContext context)
+
+
+        public override Task<TakeSampleFromCellReply> SampleInCell(SampleInCellRequest request, ServerCallContext context)
         {
             if (!request.IsInCell)
             {
                 Console.WriteLine("Device is not in the cell");
                 return null;
             }
-            var t = new TakeSampleFromCellReply { CellNum = 2 };
+            var t = new TakeSampleFromCellReply { CellNum = _currentCell };
             return Task.FromResult(t);
         }
 

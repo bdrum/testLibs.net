@@ -8,7 +8,7 @@ service Xemo
   rpc DeviceIsReady       (DeviceIsReadyRequest)       returns (TakeSampleFromCellReply);
   rpc SampleHasTaken      (SampleHasTakenRequest)      returns (PutSampleAboveDetReply);
   rpc SampleAboveDetector (SampleAboveDetectorRequest) returns (PutSampleToDiskReply);
-  rpc PutSampleToDisk     (SampleInCellRequest)        returns (TakeSampleFromCellReply);
+  rpc SampleInCell        (SampleInCellRequest)        returns (TakeSampleFromCellReply);
   rpc DeviceError         (ErrorOccurredRequest)       returns (ErrorOccurredReply);
   rpc StopDevice          (StopRequest)                returns (StopReply);
 

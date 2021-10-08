@@ -14,10 +14,10 @@ namespace Client
 
         public static IReadOnlyDictionary<PutSampleAboveDetReply.Types.Height, Heights> HH = new Dictionary<PutSampleAboveDetReply.Types.Height, Heights>()
         {
-            { PutSampleAboveDetReply.Types.Height.H2P5, Heights.h2p5},
-            { PutSampleAboveDetReply.Types.Height.H5  , Heights.h5 },
-            { PutSampleAboveDetReply.Types.Height.H10  , Heights.h10 },
-            { PutSampleAboveDetReply.Types.Height.H20  , Heights.h20 }
+            { PutSampleAboveDetReply.Types.Height.H2P5, Heights.h2p5 },
+            { PutSampleAboveDetReply.Types.Height.H5,   Heights.h5   },
+            { PutSampleAboveDetReply.Types.Height.H10,  Heights.h10  },
+            { PutSampleAboveDetReply.Types.Height.H20,  Heights.h20  }
         };
         static async Task Main(string[] args)
         {
@@ -31,24 +31,26 @@ namespace Client
 
                 var client = new Xemo.XemoClient(channel);
 
-                var ct = new CancellationTokenSource();
+                var ct = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
                 await sc.HomeAsync(ct.Token);
 
-                var ts = await client.DeviceIsReadyAsync(new DeviceIsReadyRequest { DevId = devId, IsReady = true });
+                while (!ct.IsCancellationRequested)
+                {
+                    var ts = await client.DeviceIsReadyAsync(new DeviceIsReadyRequest { DevId = devId, IsReady = true });
 
-                await sc.TakeSampleFromTheCellAsync((short)ts.CellNum, ct.Token);
+                    await sc.TakeSampleFromTheCellAsync((short)ts.CellNum, ct.Token);
 
-                var gotodeth = await client.SampleHasTakenAsync(new SampleHasTakenRequest { DevId = devId, IsTaken = true });
+                    var gotodeth = await client.SampleHasTakenAsync(new SampleHasTakenRequest { DevId = devId, IsTaken = true });
 
+                    await sc.PutSampleAboveDetectorWithHeightAsync(HH[gotodeth.H], ct.Token);
 
-                await sc.PutSampleAboveDetectorWithHeightAsync(HH[gotodeth.H], ct.Token);
+                    var takeSample = await client.SampleAboveDetectorAsync(new SampleAboveDetectorRequest { DevId = devId, IsAbove = true });
 
-                var takeSample = await client.SampleAboveDetectorAsync(new SampleAboveDetectorRequest { DevId = devId, IsAbove = true });
+                    await sc.PutSampleToTheDiskAsync((short)ts.CellNum, ct.Token);
 
-                await sc.PutSampleToTheDiskAsync((short)ts.CellNum, ct.Token);
-
-                var tsNext = await client.PutSampleToDiskAsync(new SampleInCellRequest { DevId = devId, IsInCell = true });
+                    var tsNext = await client.SampleInCellAsync(new SampleInCellRequest { DevId = devId, IsInCell = true });
+                }
 
             }
 
