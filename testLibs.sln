@@ -5,39 +5,41 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CA3FD8DF-A31A-46B0-9BBA-0BD86BABAD53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "canberra", "src\canberra\canberra.csproj", "{4CDC2A6B-2321-4D9D-AB11-E037937EE708}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "canberra", "src\canberra\canberra.csproj", "{4CDC2A6B-2321-4D9D-AB11-E037937EE708}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet", "dotnet", "{AE563A40-644B-440F-AF07-DEAFF76BB225}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "async", "src\dotnet\async\async.csproj", "{91073BAD-0637-4C5F-BEE2-AA8FA4C90DAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "async", "src\dotnet\async\async.csproj", "{91073BAD-0637-4C5F-BEE2-AA8FA4C90DAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "basics", "src\dotnet\basics\basics.csproj", "{5F1BE35F-5049-4418-A972-C00A8BF323E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "basics", "src\dotnet\basics\basics.csproj", "{5F1BE35F-5049-4418-A972-C00A8BF323E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "collections", "src\dotnet\collections\collections.csproj", "{1DDD0CD3-9348-4FBD-B1C6-C9B8CEA5E01C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "collections", "src\dotnet\collections\collections.csproj", "{1DDD0CD3-9348-4FBD-B1C6-C9B8CEA5E01C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "configs", "src\dotnet\configs\configs.csproj", "{C82D9806-A223-4F78-A07D-7FB84A1FCD58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "configs", "src\dotnet\configs\configs.csproj", "{C82D9806-A223-4F78-A07D-7FB84A1FCD58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "disasm", "src\dotnet\disasm\disasm.csproj", "{9A3CB89C-6911-4CD8-86DC-32A177FB6283}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "disasm", "src\dotnet\disasm\disasm.csproj", "{9A3CB89C-6911-4CD8-86DC-32A177FB6283}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "efcore", "src\dotnet\efcore\efcore.csproj", "{6153AC83-8979-4D3B-9E0C-873AFAF1D3CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "efcore", "src\dotnet\efcore\efcore.csproj", "{6153AC83-8979-4D3B-9E0C-873AFAF1D3CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "io", "src\dotnet\io\io.csproj", "{CD4D5EA6-787C-42A3-92A8-3E64F8FBA6B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "io", "src\dotnet\io\io.csproj", "{CD4D5EA6-787C-42A3-92A8-3E64F8FBA6B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "leaks", "src\dotnet\leaks\leaks.csproj", "{84BB81AD-12E9-4720-AD52-736D3596488F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "leaks", "src\dotnet\leaks\leaks.csproj", "{84BB81AD-12E9-4720-AD52-736D3596488F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "linq", "src\dotnet\linq\linq.csproj", "{711340C9-006B-44F7-9053-1B4712FCC162}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "linq", "src\dotnet\linq\linq.csproj", "{711340C9-006B-44F7-9053-1B4712FCC162}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "memory", "src\dotnet\memory\memory.csproj", "{DA1446EF-4BD1-4B53-82A2-C3A3AEC156AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "memory", "src\dotnet\memory\memory.csproj", "{DA1446EF-4BD1-4B53-82A2-C3A3AEC156AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "json", "src\dotnet\system.text.json\json.csproj", "{78BC773A-27DC-4121-A367-C436879672D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "json", "src\dotnet\system.text.json\json.csproj", "{78BC773A-27DC-4121-A367-C436879672D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tasks", "src\dotnet\tasks\tasks.csproj", "{2B9AFAD7-DA80-4BB8-AB98-09400023122A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tasks", "src\dotnet\tasks\tasks.csproj", "{2B9AFAD7-DA80-4BB8-AB98-09400023122A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "regata.core", "regata.core", "{BD874470-4E50-4D2A-9E18-E9268055A0FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sc", "src\regata.core\sc\sc.csproj", "{C3355ADB-4D04-48C7-920A-A537FEC5A59F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sc", "src\regata.core\sc\sc.csproj", "{C3355ADB-4D04-48C7-920A-A537FEC5A59F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xemo", "src\xemo\xemo.csproj", "{1413AB35-DA43-41BE-AFF8-ED05BDF5EE75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xemo", "src\xemo\xemo.csproj", "{1413AB35-DA43-41BE-AFF8-ED05BDF5EE75}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "excel", "src\excel\excel.csproj", "{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,9 +49,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4CDC2A6B-2321-4D9D-AB11-E037937EE708}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -232,6 +231,21 @@ Global
 		{1413AB35-DA43-41BE-AFF8-ED05BDF5EE75}.Release|x64.Build.0 = Release|Any CPU
 		{1413AB35-DA43-41BE-AFF8-ED05BDF5EE75}.Release|x86.ActiveCfg = Release|Any CPU
 		{1413AB35-DA43-41BE-AFF8-ED05BDF5EE75}.Release|x86.Build.0 = Release|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Debug|x64.Build.0 = Debug|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Debug|x86.Build.0 = Debug|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Release|x64.ActiveCfg = Release|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Release|x64.Build.0 = Release|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Release|x86.ActiveCfg = Release|Any CPU
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4CDC2A6B-2321-4D9D-AB11-E037937EE708} = {CA3FD8DF-A31A-46B0-9BBA-0BD86BABAD53}
@@ -251,5 +265,9 @@ Global
 		{BD874470-4E50-4D2A-9E18-E9268055A0FA} = {CA3FD8DF-A31A-46B0-9BBA-0BD86BABAD53}
 		{C3355ADB-4D04-48C7-920A-A537FEC5A59F} = {BD874470-4E50-4D2A-9E18-E9268055A0FA}
 		{1413AB35-DA43-41BE-AFF8-ED05BDF5EE75} = {CA3FD8DF-A31A-46B0-9BBA-0BD86BABAD53}
+		{9804B34E-B9EB-4BD8-AFA3-5F7E769807A3} = {BD874470-4E50-4D2A-9E18-E9268055A0FA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {27A708BC-171A-4505-A53E-F4E43759B37E}
 	EndGlobalSection
 EndGlobal
